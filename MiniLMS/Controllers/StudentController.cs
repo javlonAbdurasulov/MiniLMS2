@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using LazyCache;
 using Microsoft.AspNetCore.Mvc;
+using MiniLMS.Application.Caching;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
@@ -14,19 +16,33 @@ public class StudentController : ControllerBase
     private readonly IStudentService _studentService;
     private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
+    private readonly ICacheProvider _cacheProvider; 
     
-    public StudentController(IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    public StudentController(ICacheProvider cacheProvider,IStudentService studentService, IMapper mapper,IValidator<Student> validator)
     {
         _validator = validator;
         _studentService = studentService;
         _mapper = mapper;
+        _cacheProvider = cacheProvider;
     }
 
     [HttpGet]
     public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> GetAll()
     {
-        IEnumerable<Student> student = await _studentService.GetAllAsync();
-        IEnumerable<StudentGetDTO> students = _mapper.Map<IEnumerable<StudentGetDTO>>(student);
+        if(!_cacheProvider.TryGetValue(CacheKeys.Student, out IEnumerable<Student> student))
+        {
+            student = await _studentService.GetAllAsync();
+
+            var cacheEntityOption = new LazyCacheEntryOptions
+            {
+                AbsoluteExpiration = DateTime.Now.AddSeconds(30),
+                SlidingExpiration = TimeSpan.FromSeconds(30),
+                Size = 1024
+            };
+            _cacheProvider.Set(CacheKeys.Student,student,cacheEntityOption);
+        }
+        //IEnumerable<Student> student = await _studentService.GetAllAsync();
+        //IEnumerable<StudentGetDTO> students = _mapper.Map<IEnumerable<StudentGetDTO>>(student);
          
 
         return new(students);

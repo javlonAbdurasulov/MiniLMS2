@@ -21,6 +21,9 @@ public class Program
         builder.Services.AddSwaggerGen();
         //builder.Services.AddMvc();
         builder.Services.AddFluentValidation();
+        builder.Services.AddMemoryCache();  
+        builder.Services.AddLazyCache();  
+
         builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
         //builder.Services.AddFluentValidation(opt =>
         //    opt.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
