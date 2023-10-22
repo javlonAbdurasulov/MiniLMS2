@@ -35,7 +35,7 @@ public class StudentService : IStudentService
     public Task<IEnumerable<Student>> GetAllAsync()
     {
         IEnumerable<Student> students = _context.Students.Include(x => x.Teachers)
-            .AsNoTracking().AsEnumerable().OrderBy(x=>x.Id);
+            .AsNoTracking().OrderBy(x=>x.Id).AsEnumerable();
         
         return Task.FromResult(students);
     }

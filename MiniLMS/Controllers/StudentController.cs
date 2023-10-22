@@ -31,8 +31,10 @@ public class StudentController : ControllerBase
     [HttpGet]
     public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> GetAll()
     {
+         
         string st = _redis.GetString(CacheKeys.Student);
         IEnumerable<Student> student;
+        IEnumerable<Student> res;
         if (string.IsNullOrEmpty(st))
         {
             student = await _studentService.GetAllAsync();
@@ -41,16 +43,23 @@ public class StudentController : ControllerBase
                 AbsoluteExpiration = DateTime.Now.AddSeconds(30),
                 SlidingExpiration = TimeSpan.FromSeconds(30)
             };
-            st = JsonConvert.SerializeObject(student);
-            _redis.SetString(CacheKeys.Student,st,cacheEntityOption);
+            res =student.ToList();
+            st = JsonConvert.SerializeObject(res);
+            _redis.SetString(CacheKeys.Student, st, cacheEntityOption);
 
-            //await _cacheProvider.GetOrAddAsync(CacheKeys.Student,student,cacheEntityOption,DateTime.Now.AddSeconds(30));
+            //await _cacheProvider.GetOrAddAsync(CacheKeys.Student, student, cacheEntityOption, DateTime.Now.AddSeconds(30));
         }
-        //IEnumerable<Student> student = await _studentService.GetAllAsync();
-        student = JsonConvert.DeserializeObject<IEnumerable<Student>>(st);
+        else
+        {
+
+
+            //IEnumerable<Student> student = await _studentService.GetAllAsync();
+            res = JsonConvert.DeserializeObject<IEnumerable<Student>>(st);
+        }
+        
 
         IEnumerable<StudentGetDTO> students = 
-            _mapper.Map<IEnumerable<StudentGetDTO>>(student);
+            _mapper.Map<IEnumerable<StudentGetDTO>>(res);
 
 
         return new(students);
