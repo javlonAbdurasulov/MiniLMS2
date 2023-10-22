@@ -16,9 +16,10 @@ public class StudentController : ControllerBase
     private readonly IStudentService _studentService;
     private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
-    private readonly ICacheProvider _cacheProvider; 
-    
-    public StudentController(ICacheProvider cacheProvider,IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    private readonly ICacheProvider _cacheProvider;
+    //private readonly IAppCache _cacheProvider; 
+
+    public StudentController(ICacheProvider cacheProvider/*IAppCache cacheProvider*/, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
     {
         _validator = validator;
         _studentService = studentService;
@@ -40,10 +41,13 @@ public class StudentController : ControllerBase
                 Size = 1024
             };
             _cacheProvider.Set(CacheKeys.Student,student,cacheEntityOption);
+
+            //await _cacheProvider.GetOrAddAsync(CacheKeys.Student,student,cacheEntityOption,DateTime.Now.AddSeconds(30));
         }
         //IEnumerable<Student> student = await _studentService.GetAllAsync();
-        //IEnumerable<StudentGetDTO> students = _mapper.Map<IEnumerable<StudentGetDTO>>(student);
-         
+        IEnumerable<StudentGetDTO> students = 
+            _mapper.Map<IEnumerable<StudentGetDTO>>(student);
+
 
         return new(students);
     }
