@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using LazyCache;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using MiniLMS.Application.Caching;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
 using MiniLMS.Domain.Models.StudentDTO;
+using Newtonsoft.Json;
 
 namespace MiniLMS.API.Controllers;
 [Route("api/[controller]/[action]")]
@@ -16,35 +17,38 @@ public class StudentController : ControllerBase
     private readonly IStudentService _studentService;
     private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
-    private readonly ICacheProvider _cacheProvider;
+    private readonly IDistributedCache _redis;
     //private readonly IAppCache _cacheProvider; 
 
-    public StudentController(ICacheProvider cacheProvider/*IAppCache cacheProvider*/, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    public StudentController(IDistributedCache redis/*IAppCache cacheProvider*/, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
     {
         _validator = validator;
         _studentService = studentService;
         _mapper = mapper;
-        _cacheProvider = cacheProvider;
+        _redis = redis;
     }
 
     [HttpGet]
     public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> GetAll()
     {
-        if(!_cacheProvider.TryGetValue(CacheKeys.Student, out IEnumerable<Student> student))
+        string st = _redis.GetString(CacheKeys.Student);
+        IEnumerable<Student> student;
+        if (string.IsNullOrEmpty(st))
         {
             student = await _studentService.GetAllAsync();
-
-            var cacheEntityOption = new LazyCacheEntryOptions
+            var cacheEntityOption = new DistributedCacheEntryOptions
             {
                 AbsoluteExpiration = DateTime.Now.AddSeconds(30),
-                SlidingExpiration = TimeSpan.FromSeconds(30),
-                Size = 1024
+                SlidingExpiration = TimeSpan.FromSeconds(30)
             };
-            _cacheProvider.Set(CacheKeys.Student,student,cacheEntityOption);
+            st = JsonConvert.SerializeObject(student);
+            _redis.SetString(CacheKeys.Student,st,cacheEntityOption);
 
             //await _cacheProvider.GetOrAddAsync(CacheKeys.Student,student,cacheEntityOption,DateTime.Now.AddSeconds(30));
         }
         //IEnumerable<Student> student = await _studentService.GetAllAsync();
+        student = JsonConvert.DeserializeObject<IEnumerable<Student>>(st);
+
         IEnumerable<StudentGetDTO> students = 
             _mapper.Map<IEnumerable<StudentGetDTO>>(student);
 

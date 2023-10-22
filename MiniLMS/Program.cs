@@ -1,5 +1,6 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.Extensions.DependencyInjection;
 using MiniLMS.Application;
 using MiniLMS.Application.FluentValidation;
 using MiniLMS.Infrastructure;
@@ -21,8 +22,15 @@ public class Program
         builder.Services.AddSwaggerGen();
         //builder.Services.AddMvc();
         builder.Services.AddFluentValidation();
-        builder.Services.AddMemoryCache();  
-        builder.Services.AddLazyCache();  
+        builder.Services.AddMemoryCache();
+        //builder.Services.AddLazyCache();  
+        builder.Services.AddStackExchangeRedisCache(opt =>
+        {
+            string connect = builder.Configuration.
+                GetConnectionString("Redis");
+
+            opt.Configuration = connect;
+        });
 
         builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
         //builder.Services.AddFluentValidation(opt =>
