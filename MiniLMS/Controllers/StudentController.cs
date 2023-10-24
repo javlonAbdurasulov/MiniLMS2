@@ -14,27 +14,30 @@ namespace MiniLMS.API.Controllers;
 [ApiController]
 public class StudentController : ControllerBase
 {
+
+    private readonly ILogger<StudentController> _logger;
     private readonly IStudentService _studentService;
     private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
     private readonly IDistributedCache _redis;
     //private readonly IAppCache _cacheProvider; 
 
-    public StudentController(IDistributedCache redis/*IAppCache cacheProvider*/, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    public StudentController(IDistributedCache redis/*IAppCache cacheProvider*/,ILogger<StudentController> logger, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
     {
         _validator = validator;
         _studentService = studentService;
         _mapper = mapper;
         _redis = redis;
+        _logger = logger;
     }
 
     [HttpGet]
     public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> GetAll()
     {
-         
+        _logger.LogInformation("Get All Student!");
         string st = _redis.GetString(CacheKeys.Student);
         IEnumerable<Student> student;
-        IEnumerable<Student> res;
+        IEnumerable<StudentGetDTO> students;
         if (string.IsNullOrEmpty(st))
         {
             student = await _studentService.GetAllAsync();
@@ -43,8 +46,9 @@ public class StudentController : ControllerBase
                 AbsoluteExpiration = DateTime.Now.AddSeconds(30),
                 SlidingExpiration = TimeSpan.FromSeconds(30)
             };
-            res =student.ToList();
-            st = JsonConvert.SerializeObject(res);
+            students =
+            _mapper.Map<IEnumerable<StudentGetDTO>>(student);
+            st = JsonConvert.SerializeObject(students);
             _redis.SetString(CacheKeys.Student, st, cacheEntityOption);
 
             //await _cacheProvider.GetOrAddAsync(CacheKeys.Student, student, cacheEntityOption, DateTime.Now.AddSeconds(30));
@@ -54,12 +58,12 @@ public class StudentController : ControllerBase
 
 
             //IEnumerable<Student> student = await _studentService.GetAllAsync();
-            res = JsonConvert.DeserializeObject<IEnumerable<Student>>(st);
+            students = JsonConvert.DeserializeObject<IEnumerable<StudentGetDTO>>(st);
         }
         
 
-        IEnumerable<StudentGetDTO> students = 
-            _mapper.Map<IEnumerable<StudentGetDTO>>(res);
+        //IEnumerable<StudentGetDTO> students = 
+        //    _mapper.Map<IEnumerable<StudentGetDTO>>(res);
 
 
         return new(students);
