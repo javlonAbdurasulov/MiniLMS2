@@ -8,6 +8,7 @@ using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
 using MiniLMS.Domain.Models.StudentDTO;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace MiniLMS.API.Controllers;
 [Route("api/[controller]/[action]")]
@@ -47,7 +48,7 @@ public class StudentController : ControllerBase
                 SlidingExpiration = TimeSpan.FromSeconds(30)
             };
             students =
-            _mapper.Map<IEnumerable<StudentGetDTO>>(student);
+                _mapper.Map<IEnumerable<StudentGetDTO>>(student);
             st = JsonConvert.SerializeObject(students);
             _redis.SetString(CacheKeys.Student, st, cacheEntityOption);
 
@@ -65,28 +66,38 @@ public class StudentController : ControllerBase
     [HttpGet]
     public async Task<ResponseModel<StudentGetDTO>> GetById(int id)
     {
+        _logger.LogInformation($"Run GetbyId id:{id} !");
         Student studentEntity = await _studentService.GetByIdAsync(id);
+        _logger.LogDebug("Get by Id executing....");
         StudentGetDTO studentDto= _mapper.Map<StudentGetDTO>(studentEntity);
+        if(studentEntity == null)
+        {
+            _logger.LogWarning($"Student with id: {id} not found!");
+            _logger.LogError("this error.. ");
+            return new(studentDto, HttpStatusCode.NotFound);
+        }
         return new(studentDto);
     }
     [HttpPost]
     public async Task<ResponseModel<StudentGetDTO>> Create(StudentCreateDTO studentCreateDto)
     {
+        _logger.LogInformation("Create Student!");
         Student mappedStudent = _mapper.Map<Student>(studentCreateDto);
         var validResult = await _validator.ValidateAsync(mappedStudent);
 
+        if (!validResult.IsValid)
+            return new(validResult.IsValid.ToString());
         Student studentEntity = await _studentService.CreateAsync(mappedStudent);
         StudentGetDTO studentDto = _mapper.Map<StudentGetDTO>(mappedStudent);
 
-        if (validResult.IsValid)
-            return new(validResult.IsValid.ToString());
-
+        _redis.Remove(CacheKeys.Student);
         return new(studentDto);
     }
 
     [HttpDelete]
     public async Task<string> Delete(int id)
     {
+        _logger.LogInformation($"Delete Student id:{id}!");
         bool result = await _studentService.DeleteAsync(id);
         string s = result ? "O'chirildi" : "Bunday id topilmadi";
         return s;
@@ -95,6 +106,7 @@ public class StudentController : ControllerBase
     [HttpPatch]
     public async Task<ResponseModel<StudentGetDTO>> Update(UpdateStudentDTO update)
     {
+        _logger.LogInformation("Update Student!");
         Student Mylogin =await _studentService.GetByIdAsync(update.Id);
         Student mapped = _mapper.Map<Student>(update);
         mapped.Login = Mylogin.Login;

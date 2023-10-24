@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Logging;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Infrastructure.DataAccess;
@@ -8,10 +9,12 @@ namespace MiniLMS.Infrastructure.Services;
 public class StudentService : IStudentService
 {
     private readonly MiniLMSDbContext _context;
+    private readonly ILogger<StudentService> _logger;
 
-    public StudentService(MiniLMSDbContext context)
+    public StudentService(MiniLMSDbContext context,ILogger<StudentService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<Student> CreateAsync(Student entity)
@@ -34,6 +37,7 @@ public class StudentService : IStudentService
 
     public Task<IEnumerable<Student>> GetAllAsync()
     {
+        _logger.LogWarning("Get all async execute...");
         IEnumerable<Student> students = _context.Students.Include(x => x.Teachers)
             .AsNoTracking().OrderBy(x=>x.Id).AsEnumerable();
         

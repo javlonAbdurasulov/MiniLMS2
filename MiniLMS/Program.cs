@@ -31,7 +31,6 @@ public class Program
 
             opt.Configuration = connect;
         });
-
         builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
         //builder.Services.AddFluentValidation(opt =>
         //    opt.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
