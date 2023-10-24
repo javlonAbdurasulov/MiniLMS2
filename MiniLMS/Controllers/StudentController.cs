@@ -51,21 +51,14 @@ public class StudentController : ControllerBase
             st = JsonConvert.SerializeObject(students);
             _redis.SetString(CacheKeys.Student, st, cacheEntityOption);
 
-            //await _cacheProvider.GetOrAddAsync(CacheKeys.Student, student, cacheEntityOption, DateTime.Now.AddSeconds(30));
         }
         else
         {
-
-
-            //IEnumerable<Student> student = await _studentService.GetAllAsync();
             students = JsonConvert.DeserializeObject<IEnumerable<StudentGetDTO>>(st);
         }
-        
-
         //IEnumerable<StudentGetDTO> students = 
         //    _mapper.Map<IEnumerable<StudentGetDTO>>(res);
-
-
+        
         return new(students);
     }
 
