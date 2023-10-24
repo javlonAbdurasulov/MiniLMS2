@@ -23,7 +23,7 @@ public class Program
         //builder.Services.AddMvc();
         builder.Services.AddFluentValidation();
         builder.Services.AddMemoryCache();
-        //builder.Services.AddLazyCache();  
+        builder.Services.AddLazyCache();
         builder.Services.AddStackExchangeRedisCache(opt =>
         {
             string connect = builder.Configuration.

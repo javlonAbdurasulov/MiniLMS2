@@ -99,6 +99,10 @@ public class StudentController : ControllerBase
     {
         _logger.LogInformation($"Delete Student id:{id}!");
         bool result = await _studentService.DeleteAsync(id);
+        if (result == false)
+        {
+            _logger.LogWarning($"Student with id: {id} not found!");
+        }
         string s = result ? "O'chirildi" : "Bunday id topilmadi";
         return s;
     }

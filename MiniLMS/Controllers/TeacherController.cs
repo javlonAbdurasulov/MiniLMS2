@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using LazyCache;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MiniLMS.Application.Caching;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
@@ -14,20 +16,29 @@ public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
     private readonly IMapper _mapper;
+    private readonly IAppCache _appCache;
 
-    public TeacherController(ITeacherService teacherService, IMapper mapper)
+    public TeacherController(IAppCache appCache,ITeacherService teacherService, IMapper mapper)
     {
         _teacherService = teacherService;
         _mapper = mapper;
+        _appCache = appCache;
     }
 
     [HttpGet]
     public async Task<ResponseModel<IEnumerable<TeacherGetDTO>>> GetAll()
     {
-        var get = await _teacherService.GetAllAsync();
-        IEnumerable<TeacherGetDTO> teachers = _mapper.Map<IEnumerable<TeacherGetDTO>>(get);
+        if (_appCache.TryGetValue(CacheKeys.Teacher, out IEnumerable<TeacherGetDTO> cachedTeachers))
+        {
+            return new ResponseModel<IEnumerable<TeacherGetDTO>>(cachedTeachers);
+        }
 
-        return new(teachers);
+        var getTeachers = await _teacherService.GetAllAsync();
+        IEnumerable<TeacherGetDTO> teachers = _mapper.Map<IEnumerable<TeacherGetDTO>>(getTeachers);
+
+        _appCache.Add(CacheKeys.Teacher, teachers, TimeSpan.FromMinutes(10));
+
+        return new ResponseModel<IEnumerable<TeacherGetDTO>>(teachers);
     }
     [HttpGet]
     public async Task<ResponseModel<TeacherGetDTO>> GetById(int id)
