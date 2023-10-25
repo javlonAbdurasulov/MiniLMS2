@@ -9,12 +9,12 @@ namespace MiniLMS.Infrastructure.Services;
 public class StudentService : IStudentService
 {
     private readonly MiniLMSDbContext _context;
-    private readonly ILogger<StudentService> _logger;
+    private readonly Serilog.ILogger _serilog;
 
-    public StudentService(MiniLMSDbContext context,ILogger<StudentService> logger)
+    public StudentService(MiniLMSDbContext context,Serilog.ILogger logger)
     {
         _context = context;
-        _logger = logger;
+        _serilog = logger;
     }
 
     public async Task<Student> CreateAsync(Student entity)
@@ -28,7 +28,10 @@ public class StudentService : IStudentService
     {
         Student? entity = await _context.Students.FindAsync(Id);
         if (entity == null)
+        {
+            _serilog.Warning("Not found delete implementation!");
             return false;
+        }
 
         _context.Remove(entity);
         await _context.SaveChangesAsync();
@@ -37,7 +40,7 @@ public class StudentService : IStudentService
 
     public Task<IEnumerable<Student>> GetAllAsync()
     {
-        _logger.LogWarning("Get all async execute...");
+        _serilog.Debug("Get all async execute...");
         IEnumerable<Student> students = _context.Students.Include(x => x.Teachers)
             .AsNoTracking().OrderBy(x=>x.Id).AsEnumerable();
         
@@ -48,6 +51,10 @@ public class StudentService : IStudentService
     {
         Student? studentEntity = await _context.Students.Include(x=>x.Teachers)
             .FirstOrDefaultAsync(x=>x.Id==id);
+        if (studentEntity == null)
+        {
+            _serilog.Warning($"Student implement send null object!");
+        }
         return studentEntity;
     }
 
