@@ -2,10 +2,12 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 using MiniLMS.Application;
+using MiniLMS.Application.CustomLogger;
 using MiniLMS.Application.FluentValidation;
 using MiniLMS.Infrastructure;
 using Serilog;
 using Serilog.Core;
+using Serilog.Events;
 
 namespace MiniLMS;
 public class Program
@@ -15,12 +17,37 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         Logger log = new LoggerConfiguration()
+
+            //.WriteTo.Logger(lg=>
+            //    lg.Filter.ByExcluding(
+            //            logEvent =>
+            //                logEvent.MessageTemplate.Text.StartsWith("SerialogFor")||
+            //                logEvent.MessageTemplate.Text.Contains("Executing")||
+            //                logEvent.MessageTemplate.Text.Contains("Executed")
+            //                )
+            //        )
+
             .WriteTo.Console()
             .WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY",chatId: "5559328968")
+            
+            //.Filter.With<CustomLogEventFilter>()
+
+            .MinimumLevel.Warning()
+
+            //.MinimumLevel.Verbose()
+            
+            //.MinimumLevel.Debug() 
+            //.MinimumLevel.Override("Serilog", LogEventLevel.Information) 
+
+        //.Filter.ByExcluding(logEvent => 
+                //logEvent.MessageTemplate.Text.Contains("SerialogFor") ||
+                //logEvent.MessageTemplate.Text.Contains("Request starting") ||
+                //logEvent.MessageTemplate.Text.Contains("Executed action") ||
+                //logEvent.MessageTemplate.Text.Contains("Executed endpoint") ||
+                //logEvent.MessageTemplate.Text.Contains("Request finished")
+            //    )
+
             .CreateLogger();
-
-            //logger.Fatal("Get All Student!");
-
         try
         {
             // CreateAsync services to the container.
