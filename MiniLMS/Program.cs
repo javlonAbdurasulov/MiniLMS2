@@ -15,42 +15,52 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        Log.Logger logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration).CreateLogger();
+        //Log.Logger = new LoggerConfiguration()
+        //    .ReadFrom.Configuration(builder.Configuration).CreateLogger();
         #region
-        //Logger log = new LoggerConfiguration()
+        Logger log = new LoggerConfiguration()
+            .WriteTo.PostgreSQL
+                (builder.Configuration.GetConnectionString("LoggersCon"),
+                 "Logs",
+                 needAutoCreateTable:true)
 
-        //    //.WriteTo.Logger(lg=>
-        //    //    lg.Filter.ByExcluding(
-        //    //            logEvent =>
-        //    //                logEvent.MessageTemplate.Text.StartsWith("SerialogFor")||
-        //    //                logEvent.MessageTemplate.Text.Contains("Executing")||
-        //    //                logEvent.MessageTemplate.Text.Contains("Executed")
-        //    //                )
-        //    //        )
+            //.ReadFrom.Configuration(builder.Configuration)
 
-        //    .WriteTo.Console()
-        //    .WriteTo.File("logs/javaLog-.json",rollingInterval: RollingInterval.Minute)
-        //    .WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY",chatId: "5559328968")
-            
-        //    //.Filter.With<CustomLogEventFilter>()
+            ////.WriteTo.Logger(lg=>
+            ////    lg.Filter.ByExcluding(
+            ////            logEvent =>
+            ////                logEvent.MessageTemplate.Text.StartsWith("SerialogFor")||
+            ////                logEvent.MessageTemplate.Text.Contains("Executing")||
+            ////                logEvent.MessageTemplate.Text.Contains("Executed")
+            ////                )
+            ////        )
 
-        //    .MinimumLevel.Warning()
+            //.WriteTo.Console()
+            //.WriteTo.File("logs/javaLog-.json", rollingInterval: RollingInterval.Minute)
+            //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
-        //    //.MinimumLevel.Verbose()
-            
-        //    //.MinimumLevel.Debug() 
-        //    //.MinimumLevel.Override("Serilog", LogEventLevel.Information) 
+            ////.Filter.With<CustomLogEventFilter>()
 
-        ////.Filter.ByExcluding(logEvent => 
-        //        //logEvent.MessageTemplate.Text.Contains("SerialogFor") ||
-        //        //logEvent.MessageTemplate.Text.Contains("Request starting") ||
-        //        //logEvent.MessageTemplate.Text.Contains("Executed action") ||
-        //        //logEvent.MessageTemplate.Text.Contains("Executed endpoint") ||
-        //        //logEvent.MessageTemplate.Text.Contains("Request finished")
-        //    //    )
+            //.MinimumLevel.Warning()
 
-        //    .CreateLogger();
+            ////.MinimumLevel.Verbose()
+
+            ////.MinimumLevel.Debug() 
+            ////.MinimumLevel.Override("Serilog", LogEventLevel.Information) 
+
+            ////.Filter.ByExcluding(logEvent => 
+            ////logEvent.MessageTemplate.Text.Contains("SerialogFor") ||
+            ////logEvent.MessageTemplate.Text.Contains("Request starting") ||
+            ////logEvent.MessageTemplate.Text.Contains("Executed action") ||
+            ////logEvent.MessageTemplate.Text.Contains("Executed endpoint") ||
+            ////logEvent.MessageTemplate.Text.Contains("Request finished")
+            ////    )
+
+
+            .MinimumLevel.Information()
+            .CreateLogger();
+
+
         #endregion
         try
         {
@@ -72,9 +82,12 @@ public class Program
 
                 opt.Configuration = connect;
             });
-            
+
+            //builder.Services.AddSerilog();
+
             builder.Services.AddSerilog(log);
-            
+
+
             builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
             //builder.Services.AddFluentValidation(opt =>
             //    opt.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
@@ -110,7 +123,7 @@ public class Program
         }
         finally
         {
-            Log.CloseAndFlush();
+            //Log.CloseAndFlush();
         }
     }
 }
