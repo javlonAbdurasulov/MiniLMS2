@@ -15,39 +15,43 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        Log.Logger logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration).CreateLogger();
+        #region
+        //Logger log = new LoggerConfiguration()
 
-        Logger log = new LoggerConfiguration()
+        //    //.WriteTo.Logger(lg=>
+        //    //    lg.Filter.ByExcluding(
+        //    //            logEvent =>
+        //    //                logEvent.MessageTemplate.Text.StartsWith("SerialogFor")||
+        //    //                logEvent.MessageTemplate.Text.Contains("Executing")||
+        //    //                logEvent.MessageTemplate.Text.Contains("Executed")
+        //    //                )
+        //    //        )
 
-            //.WriteTo.Logger(lg=>
-            //    lg.Filter.ByExcluding(
-            //            logEvent =>
-            //                logEvent.MessageTemplate.Text.StartsWith("SerialogFor")||
-            //                logEvent.MessageTemplate.Text.Contains("Executing")||
-            //                logEvent.MessageTemplate.Text.Contains("Executed")
-            //                )
-            //        )
-
-            .WriteTo.Console()
-            .WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY",chatId: "5559328968")
+        //    .WriteTo.Console()
+        //    .WriteTo.File("logs/javaLog-.json",rollingInterval: RollingInterval.Minute)
+        //    .WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY",chatId: "5559328968")
             
-            //.Filter.With<CustomLogEventFilter>()
+        //    //.Filter.With<CustomLogEventFilter>()
 
-            .MinimumLevel.Warning()
+        //    .MinimumLevel.Warning()
 
-            //.MinimumLevel.Verbose()
+        //    //.MinimumLevel.Verbose()
             
-            //.MinimumLevel.Debug() 
-            //.MinimumLevel.Override("Serilog", LogEventLevel.Information) 
+        //    //.MinimumLevel.Debug() 
+        //    //.MinimumLevel.Override("Serilog", LogEventLevel.Information) 
 
-        //.Filter.ByExcluding(logEvent => 
-                //logEvent.MessageTemplate.Text.Contains("SerialogFor") ||
-                //logEvent.MessageTemplate.Text.Contains("Request starting") ||
-                //logEvent.MessageTemplate.Text.Contains("Executed action") ||
-                //logEvent.MessageTemplate.Text.Contains("Executed endpoint") ||
-                //logEvent.MessageTemplate.Text.Contains("Request finished")
-            //    )
+        ////.Filter.ByExcluding(logEvent => 
+        //        //logEvent.MessageTemplate.Text.Contains("SerialogFor") ||
+        //        //logEvent.MessageTemplate.Text.Contains("Request starting") ||
+        //        //logEvent.MessageTemplate.Text.Contains("Executed action") ||
+        //        //logEvent.MessageTemplate.Text.Contains("Executed endpoint") ||
+        //        //logEvent.MessageTemplate.Text.Contains("Request finished")
+        //    //    )
 
-            .CreateLogger();
+        //    .CreateLogger();
+        #endregion
         try
         {
             // CreateAsync services to the container.
