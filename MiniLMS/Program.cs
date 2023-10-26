@@ -19,10 +19,15 @@ public class Program
         //    .ReadFrom.Configuration(builder.Configuration).CreateLogger();
         #region
         Logger log = new LoggerConfiguration()
-            .WriteTo.PostgreSQL
-                (builder.Configuration.GetConnectionString("LoggersCon"),
-                 "Logs",
-                 needAutoCreateTable:true)
+            .WriteTo.Console()
+            .WriteTo.PostgreSQL("Server=::1; Database=loggers;User Id=logger; password=123",
+            "Logs",
+            needAutoCreateTable:true)
+
+            //.WriteTo.PostgreSQL
+            //    (builder.Configuration.GetConnectionString("LoggersCon"),
+            //     "Logs",
+            //     needAutoCreateTable:true)
 
             //.ReadFrom.Configuration(builder.Configuration)
 
@@ -36,7 +41,7 @@ public class Program
             ////        )
 
             //.WriteTo.Console()
-            //.WriteTo.File("logs/javaLog-.json", rollingInterval: RollingInterval.Minute)
+            .WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Minute)
             //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
             ////.Filter.With<CustomLogEventFilter>()
