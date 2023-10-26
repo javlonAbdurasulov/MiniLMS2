@@ -21,11 +21,12 @@ public class Program
         #region
         Logger log = new LoggerConfiguration()
             .Enrich.WithThreadId()
-            //.Enrich.WithCorrelationId()
-            //.Enrich.WithMachineName()
+            .Enrich.WithCorrelationId()
+            .Enrich.WithEnvironmentName()
+            .Enrich.WithMachineName()
             //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} CorrelationId:{CorrelationId} {Level:u3}]  {Message:1j}{NewLine}{Exception}")
-            //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName} {Level:u3}] {Message:1j}{NewLine}{Exception}")
-            .WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} ThreadId: {ThreadId} {Level:u3}] {Message:1j}{NewLine}{Exception}")
+            .WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName}  {Level:u3}] {Message:1j}{NewLine}{Exception}")
+            //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} ThreadId: {ThreadId} {Level:u3}] {Message:1j}{NewLine}{Exception}")
             .WriteTo.PostgreSQL("Server=::1; Database=loggers;User Id=logger; password=123",
             "Logs",
             needAutoCreateTable:true)
@@ -47,7 +48,7 @@ public class Program
             ////        )
 
             //.WriteTo.Console()
-            //.WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
+            .WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
             //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
             ////.Filter.With<CustomLogEventFilter>()
