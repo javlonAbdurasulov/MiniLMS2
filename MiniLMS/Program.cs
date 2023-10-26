@@ -20,11 +20,12 @@ public class Program
         //    .ReadFrom.Configuration(builder.Configuration).CreateLogger();
         #region
         Logger log = new LoggerConfiguration()
+            .Enrich.WithThreadId()
             //.Enrich.WithCorrelationId()
             //.Enrich.WithMachineName()
             //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} CorrelationId:{CorrelationId} {Level:u3}]  {Message:1j}{NewLine}{Exception}")
             //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName} {Level:u3}] {Message:1j}{NewLine}{Exception}")
-            .WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName} {Level:u3}] {Message:1j}{NewLine}{Exception}")
+            .WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} ThreadId: {ThreadId} {Level:u3}] {Message:1j}{NewLine}{Exception}")
             .WriteTo.PostgreSQL("Server=::1; Database=loggers;User Id=logger; password=123",
             "Logs",
             needAutoCreateTable:true)
