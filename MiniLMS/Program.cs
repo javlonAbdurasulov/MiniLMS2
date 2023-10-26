@@ -8,6 +8,7 @@ using MiniLMS.Infrastructure;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using System.Diagnostics;
 
 namespace MiniLMS;
 public class Program
@@ -19,7 +20,11 @@ public class Program
         //    .ReadFrom.Configuration(builder.Configuration).CreateLogger();
         #region
         Logger log = new LoggerConfiguration()
-            .WriteTo.Console()
+            //.Enrich.WithCorrelationId()
+            //.Enrich.WithMachineName()
+            //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} CorrelationId:{CorrelationId} {Level:u3}]  {Message:1j}{NewLine}{Exception}")
+            //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName} {Level:u3}] {Message:1j}{NewLine}{Exception}")
+            .WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName} {Level:u3}] {Message:1j}{NewLine}{Exception}")
             .WriteTo.PostgreSQL("Server=::1; Database=loggers;User Id=logger; password=123",
             "Logs",
             needAutoCreateTable:true)
@@ -41,7 +46,7 @@ public class Program
             ////        )
 
             //.WriteTo.Console()
-            .WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
+            //.WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
             //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
             ////.Filter.With<CustomLogEventFilter>()
@@ -62,7 +67,7 @@ public class Program
             ////    )
 
 
-            .MinimumLevel.Information()
+            //.MinimumLevel.Information()
             .CreateLogger();
 
 
@@ -72,6 +77,7 @@ public class Program
             // CreateAsync services to the container.
 
             builder.Services.AddControllers();
+            //builder.Services.AddHttpContextAccessor();////////
             //builder.Services.AddFluentValidation(); 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
