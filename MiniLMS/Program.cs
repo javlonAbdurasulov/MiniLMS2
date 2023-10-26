@@ -41,7 +41,7 @@ public class Program
             ////        )
 
             //.WriteTo.Console()
-            .WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Minute)
+            .WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
             //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
             ////.Filter.With<CustomLogEventFilter>()
