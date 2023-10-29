@@ -2,8 +2,11 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 using MiniLMS.Application;
+using MiniLMS.Application.Client;
 using MiniLMS.Application.FluentValidation;
+using MiniLMS.Application.Services;
 using MiniLMS.Infrastructure;
+using MiniLMS.Infrastructure.Services;
 
 namespace MiniLMS;
 public class Program
@@ -15,6 +18,17 @@ public class Program
         // CreateAsync services to the container.
 
         builder.Services.AddControllers();
+        
+        
+        builder.Services.AddSingleton<IMynewClient, MynewClient>();
+        builder.Services.AddHttpClient<IMynewClient,MynewClient>(client=>
+        {
+
+        });
+
+        
+
+
         //builder.Services.AddFluentValidation(); 
         
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -18,6 +18,10 @@ public class StudentController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
     private readonly IDistributedCache _redis;
+    //private readonly HttpClient _httpClient = new()
+    //{
+    //    BaseAddress = new Uri("https://getpantry.cloud/")
+    //};
     //private readonly IAppCache _cacheProvider; 
 
     public StudentController(IDistributedCache redis/*IAppCache cacheProvider*/, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
@@ -26,6 +30,12 @@ public class StudentController : ControllerBase
         _studentService = studentService;
         _mapper = mapper;
         _redis = redis;
+    }
+    [HttpGet]
+    public async Task<ResponseModel<string>> GetFree()
+    {
+
+        return new(null);
     }
 
     [HttpGet]
