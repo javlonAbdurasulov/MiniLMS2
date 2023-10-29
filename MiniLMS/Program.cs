@@ -23,7 +23,7 @@ public class Program
         builder.Services.AddSingleton<IMynewClient, MynewClient>();
         builder.Services.AddHttpClient<IMynewClient,MynewClient>(client=>
         {
-
+            client.BaseAddress = new Uri("https://isdayoff.ru/YYMMDD");
         });
 
         
