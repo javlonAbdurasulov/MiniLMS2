@@ -9,5 +9,6 @@ public static class ApplicationServise
     {
         service.AddAutoMapper(Assembly.GetExecutingAssembly());
         
+        
     }
 }

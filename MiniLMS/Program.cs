@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 using MiniLMS.Application;
+using MiniLMS.Application.Client;
 using MiniLMS.Application.CustomLogger;
 using MiniLMS.Application.FluentValidation;
 using MiniLMS.Infrastructure;
@@ -13,7 +14,7 @@ using System.Diagnostics;
 namespace MiniLMS;
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         //Log.Logger = new LoggerConfiguration()
@@ -76,9 +77,48 @@ public class Program
         #endregion
         try
         {
-            // CreateAsync services to the container.
+            
 
             builder.Services.AddControllers();
+
+            builder.Services.AddSingleton<IMynewClient, MynewClient>();
+            builder.Services.AddHttpClient<IMynewClient, MynewClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://catfact.ninja/fact");
+            });
+            builder.Services.AddHttpClient("valspeak", opt =>
+            {
+                opt.BaseAddress = new Uri("https://catfact.ninja/fact");
+                //opt.BaseAddress = new Uri("https://api.funtranslations.com/translate/valspeak.json");
+            });
+
+            ////////////////////
+            var provider = builder.Services.BuildServiceProvider();
+            var httpclientFactory = provider.GetRequiredService<IHttpClientFactory>();
+
+            var urikey = new Uri("https://catfact.ninja/fact");
+
+            ////// post valspeak
+            var httpClientValspeak = httpclientFactory.CreateClient("valspeak");
+            //var responseValspeak = await httpClientValspeak.PostAsync()
+            var responseValspeak = await httpClientValspeak.GetAsync("");
+            var res = await responseValspeak.Content.ReadAsStringAsync();
+            await Console.Out.WriteLineAsync("-------------------------------------\n"+res+"---------------------");
+
+
+
+            ///create fact
+            var httpClient1 = httpclientFactory.CreateClient();
+            var respons = await httpClient1.GetAsync(urikey);
+
+            respons.EnsureSuccessStatusCode();
+            await Console.Out.WriteLineAsync("Factory create!");
+
+
+
+            ///////////////////
+            
+
             //builder.Services.AddHttpContextAccessor();////////
             //builder.Services.AddFluentValidation(); 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
