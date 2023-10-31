@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniLMS.Application.Caching;
+using MiniLMS.Application.External;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
@@ -22,83 +23,127 @@ public class StudentController : ControllerBase
     private readonly IValidator<Student> _validator;
     private readonly IDistributedCache _redis;
     private readonly Serilog.ILogger _seriaLog;
-    private readonly HttpClient _httpClient = new();
-    private readonly HttpClient _httpClientServices;
-    
+    private readonly IExternalAPIs _externalAPIs;
     //private readonly IAppCache _cacheProvider; 
-
-    public StudentController(HttpClient httpClient, Serilog.ILogger serilog,IDistributedCache redis, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    public StudentController(Serilog.ILogger serilog, 
+        IDistributedCache redis, 
+        IStudentService studentService, 
+        IMapper mapper,
+        IValidator<Student> validator,
+        IConfiguration configuration,
+        IExternalAPIs externalAPIs)
     {
         _validator = validator;
         _studentService = studentService;
         _mapper = mapper;
         _redis = redis;
         _seriaLog = serilog;
-        _httpClientServices = httpClient;
+        _externalAPIs = externalAPIs;
     }
+
+    #region http services
+
+    //[HttpGet]
+    //public async Task<ResponseModel<Catfact>> GetAllCatFacts()
+    //{
+
+    //    HttpResponseMessage catFacts = await _httpClientServices.GetAsync("https://catfact.ninja/fact");
+    //    var facts = await catFacts.Content.ReadFromJsonAsync<Catfact>();
+    //    //var facts = await _httpClient.GetFromJsonAsync<Catfact>("fact");
+    //    return new(facts);
+    //}
+    //[HttpGet]
+    //public async Task<ResponseModel<Catfact>> GetAllCatFacts2()
+    //{
+
+    //    HttpResponseMessage catFacts = await _httpClientServices.GetAsync("");
+    //    var facts = await catFacts.Content.ReadFromJsonAsync<Catfact>();
+    //    //var facts = await _httpClient.GetFromJsonAsync<Catfact>("fact");
+    //    return new(facts);
+    //}
+
+    ////[HttpGet]
+    ////public async Task<ResponseModel<string>> GetBitcoins()
+    ////{
+
+    ////    return new();
+    ////}
+    //[HttpGet]
+    //public async Task<ResponseModel<Catfact>> BasketbalWithKeyRapid()
+    //{
+
+    //    string apiUrl = "https://api-basketball.p.rapidapi.com/seasons";
+
+    //    using (HttpClient client = new HttpClient())
+    //    {
+    //        // Задайте заголовки запроса, включая X-Rapidapi-Key и X-Rapidapi-Host
+    //        client.DefaultRequestHeaders.Add("X-Rapidapi-Key", "cd69f3fef2msh13bfd14051d51e1p1c3eafjsnc4b6c0c39adc");
+    //        client.DefaultRequestHeaders.Add("X-Rapidapi-Host", "api-basketball.p.rapidapi.com");
+
+    //        try
+    //        {
+    //            // Выполните GET-запрос и получите ответ
+    //            HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+    //            if (response.IsSuccessStatusCode)
+    //            {
+    //                // Прочитайте ответ в виде строки
+    //                string responseContent = await response.Content.ReadAsStringAsync();
+    //                return new(responseContent);
+    //            }
+    //            else
+    //            {
+    //                return new("Ошибка при выполнении запроса. Код статуса:", response.StatusCode);
+    //                //Console.WriteLine("Ошибка при выполнении запроса. Код статуса: " + response.StatusCode);
+    //            }
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            _seriaLog.Error(ex.Message);
+    //        }
+    //    }
+    //    return new("s");
+
+    //}
+
+    #endregion
 
     [HttpGet]
     public async Task<ResponseModel<Catfact>> GetAllCatFacts()
     {
-        
-        HttpResponseMessage catFacts = await _httpClient.GetAsync("https://catfact.ninja/fact");
-        var facts = await catFacts.Content.ReadFromJsonAsync<Catfact>();
-        //var facts = await _httpClient.GetFromJsonAsync<Catfact>("fact");
-        return new(facts);
+        ResponseModel<Catfact> res = await _externalAPIs.GetAllCatFacts();
+        return res;
     }
+    //----------------------------------
+    
     [HttpGet]
-    public async Task<ResponseModel<Catfact>> GetAllCatFacts2()
+    public async Task<ResponseModel<List<Weather>>> GetAllWeather()
     {
-        
-        HttpResponseMessage catFacts = await _httpClient.GetAsync(_httpClient.BaseAddress);
-        var facts = await catFacts.Content.ReadFromJsonAsync<Catfact>();
-        //var facts = await _httpClient.GetFromJsonAsync<Catfact>("fact");
-        return new(facts);
+        ResponseModel<List<Weather>> res = await _externalAPIs.GetWeather();
+        return res;
     }
 
-    //[HttpGet]
-    //public async Task<ResponseModel<string>> GetBitcoins()
-    //{
-
-    //    return new();
-    //}
-    [HttpGet]
-    public async Task<ResponseModel<Catfact>> BasketbalWithKeyRapid()
+    [HttpPost]
+    public async Task<ResponseModel<Weather>> CreateWeather(Weather weather)
     {
+        var res = await _externalAPIs.CreateWeather(weather);
 
-        string apiUrl = "https://api-basketball.p.rapidapi.com/seasons";
-
-        using (HttpClient client = new HttpClient())
-        {
-            // Задайте заголовки запроса, включая X-Rapidapi-Key и X-Rapidapi-Host
-            client.DefaultRequestHeaders.Add("X-Rapidapi-Key", "cd69f3fef2msh13bfd14051d51e1p1c3eafjsnc4b6c0c39adc");
-            client.DefaultRequestHeaders.Add("X-Rapidapi-Host", "api-basketball.p.rapidapi.com");
-
-            try
-            {
-                // Выполните GET-запрос и получите ответ
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Прочитайте ответ в виде строки
-                    string responseContent = await response.Content.ReadAsStringAsync();
-                    return new(responseContent);
-                }
-                else
-                {
-                    return new("Ошибка при выполнении запроса. Код статуса:", response.StatusCode);
-                    //Console.WriteLine("Ошибка при выполнении запроса. Код статуса: " + response.StatusCode);
-                }
-            }
-            catch (Exception ex)
-            {
-                _seriaLog.Error(ex.Message);
-            }
-        }
-        return new("s");
-
+        return res; 
     }
+    [HttpPatch]
+    public async Task<ResponseModel<Weather>> UpdateWeathers(Weather weather)
+    {
+        var res = await _externalAPIs.updateWeather(weather);
+        return res;
+    }
+    [HttpDelete]
+    public async Task<ResponseModel<bool>> DeleteWeather(int id)
+    {
+        var res = await _externalAPIs.deleteWeather(id);
+        return res;
+    }
+
+    //----------------------------------
 
 
     [HttpGet]

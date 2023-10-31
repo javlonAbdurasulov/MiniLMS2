@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MiniLMS.Application.External;
 using MiniLMS.Application.Services;
 using MiniLMS.Infrastructure.DataAccess;
 using MiniLMS.Infrastructure.Services;
@@ -12,6 +13,7 @@ public static class ConfigureServices
     {
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ITeacherService, TeacherService>();
+        services.AddScoped<IExternalAPIs,ExternalAPIs>();
         services.AddDbContext<MiniLMSDbContext>(options =>
         options.UseNpgsql(configuration.GetConnectionString("MiniLMSDbConnection")));
     }
