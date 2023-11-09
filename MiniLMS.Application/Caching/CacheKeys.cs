@@ -9,6 +9,7 @@ namespace MiniLMS.Application.Caching
     public static class CacheKeys
     {
         public static string Student = "Student";
+        public static string Teacher = "Teacher";
 
     }
 }

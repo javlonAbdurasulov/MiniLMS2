@@ -8,14 +8,18 @@ namespace MiniLMS.Application.Client
 {
     public class MynewClient : IMynewClient
     {
-        private readonly HttpClient _httpClient = new()
+        private readonly HttpClient _httpClient;
+        public MynewClient(HttpClient httpClient)
         {
-            BaseAddress = new Uri("https://getpantry.cloud/")
-        };
+            _httpClient = httpClient;
+        }
         public async Task<string> GetFreeApi()
         {
-            string outPut = "ss";
-            return outPut;
+            
+            return 
+                await _httpClient.
+                GetStringAsync(_httpClient.BaseAddress);
+                
         }
 
     }
