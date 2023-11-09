@@ -19,6 +19,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+<<<<<<< Updated upstream
         //Log.Logger = new LoggerConfiguration()
         //    .ReadFrom.Configuration(builder.Configuration).CreateLogger();
         #region
@@ -55,6 +56,9 @@ public class Program
             //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
             ////.Filter.With<CustomLogEventFilter>()
+=======
+        #region
+>>>>>>> Stashed changes
 
             //.MinimumLevel.Warning()
 

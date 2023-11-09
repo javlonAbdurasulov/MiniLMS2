@@ -21,13 +21,12 @@ public class StudentController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
     private readonly IDistributedCache _redis;
-
+    private readonly Serilog.ILogger _seriaLog;
+    
     //private readonly HttpClient _httpClient = new()
     //{
     //    BaseAddress = new Uri("https://getpantry.cloud/")
-
-    private readonly Serilog.ILogger _seriaLog;
-    
+    //};
     //private readonly IAppCache _cacheProvider; 
 
     public StudentController(Serilog.ILogger serilog,IDistributedCache redis, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
