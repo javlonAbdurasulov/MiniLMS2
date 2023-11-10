@@ -9,8 +9,6 @@ using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
 using MiniLMS.Domain.Models.StudentDTO;
-using Newtonsoft.Json;
-using Serilog;
 using System.Net;
 
 namespace MiniLMS.API.Controllers;
