@@ -18,6 +18,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        ////perfect mediatr
         var builder = WebApplication.CreateBuilder(args);
 
         //Log.Logger = new LoggerConfiguration()
