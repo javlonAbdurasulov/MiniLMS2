@@ -87,6 +87,7 @@ public class Program
 
             builder.Services.AddControllers();
 
+
             builder.Services.AddSingleton<IMynewClient, MynewClient>();
             builder.Services.AddHttpClient<IMynewClient, MynewClient>(client =>
             {
@@ -101,6 +102,7 @@ public class Program
             builder.Services.AddSwaggerGen();
             //builder.Services.AddMvc();
             builder.Services.AddFluentValidation();
+            
             builder.Services.AddMemoryCache();
             builder.Services.AddLazyCache();
             builder.Services.AddStackExchangeRedisCache(opt =>
@@ -127,6 +129,7 @@ public class Program
 
             builder.Services.AddApplicationServise();
             builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
             
             var app = builder.Build();
 

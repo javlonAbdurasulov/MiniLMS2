@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniLMS.Application.Caching;
+using MiniLMS.Application.Mediatr;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
@@ -22,60 +24,23 @@ public class StudentController : ControllerBase
     private readonly IValidator<Student> _validator;
     private readonly IDistributedCache _redis;
     private readonly Serilog.ILogger _seriaLog;
+    private readonly IMediator _mediator;
     
-    //private readonly HttpClient _httpClient = new()
-    //{
-    //    BaseAddress = new Uri("https://getpantry.cloud/")
-    //};
-    //private readonly IAppCache _cacheProvider; 
-
-    public StudentController(Serilog.ILogger serilog,IDistributedCache redis, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    public StudentController(IMediator mediator,Serilog.ILogger serilog,IDistributedCache redis, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
     {
         _validator = validator;
         _studentService = studentService;
         _mapper = mapper;
         _redis = redis;
         _seriaLog = serilog;
+        _mediator = mediator;
     }
-    [HttpGet]
-    public async Task<ResponseModel<string>> GetFree()
-    {
-
-        return new(null);
-    }
-
     [HttpGet]
     public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> GetAll()
     {
-        _seriaLog.Information("Get All Student!");
-            //Log.Fatal("Get All Student!");
-        string st = _redis.GetString(CacheKeys.Student);
-        IEnumerable<Student> student;
-        IEnumerable<StudentGetDTO> students;
-        if (string.IsNullOrEmpty(st))
-        {
-            _seriaLog.Information("get all from database");
-            student = await _studentService.GetAllAsync();
-            var cacheEntityOption = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpiration = DateTime.Now.AddSeconds(30),
-                SlidingExpiration = TimeSpan.FromSeconds(30)
-            };
-            students =
-                _mapper.Map<IEnumerable<StudentGetDTO>>(student);
-            st = JsonConvert.SerializeObject(students);
-            _redis.SetString(CacheKeys.Student, st, cacheEntityOption);
-
-        }
-        else
-        {
-            _seriaLog.Information("get all from cache");
-            students = JsonConvert.DeserializeObject<IEnumerable<StudentGetDTO>>(st);
-        }
-        //IEnumerable<StudentGetDTO> students = 
-        //    _mapper.Map<IEnumerable<StudentGetDTO>>(res);
-        
-        return new(students);
+        var request = new StudentGetAll();
+        var res = await _mediator.Send(request);
+        return res;
     }
 
     [HttpGet]
