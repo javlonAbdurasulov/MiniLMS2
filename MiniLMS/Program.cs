@@ -1,5 +1,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using MediatR;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MiniLMS.Application;
 using MiniLMS.Application.Client;
@@ -32,9 +34,9 @@ public class Program
             //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} CorrelationId:{CorrelationId} {Level:u3}]  {Message:1j}{NewLine}{Exception}")
             .WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} MachineName: {MachineName}  {Level:u3}] {Message:1j}{NewLine}{Exception}")
             //.WriteTo.Console(outputTemplate: "[{Timestamp:MM/dd HH:mm:ss} ThreadId: {ThreadId} {Level:u3}] {Message:1j}{NewLine}{Exception}")
-            .WriteTo.PostgreSQL("Server=::1; Database=loggers;User Id=logger; password=123",
-            "Logs",
-            needAutoCreateTable:true)
+            //.WriteTo.PostgreSQL("Server=::1; Database=loggers;User Id=logger; password=123",
+            //"Logs",
+            //needAutoCreateTable:true)
 
             //.WriteTo.PostgreSQL
             //    (builder.Configuration.GetConnectionString("LoggersCon"),
@@ -53,7 +55,7 @@ public class Program
             ////        )
 
             //.WriteTo.Console()
-            .WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
+            //.WriteTo.File("./bin/logs/javaLog-.json", rollingInterval: RollingInterval.Day)
             //.WriteTo.Telegram(botToken: "6753874929:AAEOKsXGtzt04BG5zDYLKAsXtng2sSXa6UY", chatId: "5559328968")
 
             ////.Filter.With<CustomLogEventFilter>()
@@ -102,7 +104,7 @@ public class Program
             builder.Services.AddSwaggerGen();
             //builder.Services.AddMvc();
             builder.Services.AddFluentValidation();
-            
+            //builder.Services.AddAutoMapper(typeof(MediatrForRegistr));
             builder.Services.AddMemoryCache();
             builder.Services.AddLazyCache();
             builder.Services.AddStackExchangeRedisCache(opt =>
@@ -129,8 +131,9 @@ public class Program
 
             builder.Services.AddApplicationServise();
             builder.Services.AddInfrastructureServices(builder.Configuration);
-            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-            
+            //builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+            builder.Services.AddMediatR(typeof(MediatrForRegistr).Assembly);
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

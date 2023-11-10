@@ -20,7 +20,7 @@ namespace MiniLMS.Application.Mediatr
 {
     public class StudentGetAll:IRequest<ResponseModel<IEnumerable<StudentGetDTO>>>
     {
-        public ResponseModel<IEnumerable<StudentGetDTO>> studentGetDTO{ get; set; }
+        public ResponseModel<IEnumerable<StudentGetDTO>> studentGetDTO { get; set; }
     }
     
     public class StudentGetAllHandler : IRequestHandler<StudentGetAll, ResponseModel<IEnumerable<StudentGetDTO>>>
@@ -42,7 +42,6 @@ namespace MiniLMS.Application.Mediatr
 
         public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> Handle(StudentGetAll request, CancellationToken cancellationToken)
         {
-            _seriaLog.Information("Get All Student!");
             string st = _redis.GetString(CacheKeys.Student);
             IEnumerable<Student> student;
             IEnumerable<StudentGetDTO> students;
@@ -68,6 +67,7 @@ namespace MiniLMS.Application.Mediatr
             }
 
             return new(students);
+            //return Task.FromResult(new(students));
         }
     }
 }

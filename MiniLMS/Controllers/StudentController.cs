@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniLMS.Application.Caching;
 using MiniLMS.Application.Mediatr;
+using MiniLMS.Application.Mediatr.Notification;
 using MiniLMS.Application.Services;
 using MiniLMS.Domain.Entities;
 using MiniLMS.Domain.Models;
@@ -18,17 +19,18 @@ public class StudentController : ControllerBase
 {
 
     private readonly IStudentService _studentService;
-    private readonly IMapper _mapper;
+    //private readonly IMapper _mapper;
     private readonly IValidator<Student> _validator;
     private readonly IDistributedCache _redis;
     private readonly Serilog.ILogger _seriaLog;
     private readonly IMediator _mediator;
     
-    public StudentController(IMediator mediator,Serilog.ILogger serilog,IDistributedCache redis, IStudentService studentService, IMapper mapper,IValidator<Student> validator)
+    public StudentController(IMediator mediator,Serilog.ILogger serilog,
+        IDistributedCache redis, IStudentService studentService/*, IMapper mapper*/,IValidator<Student> validator)
     {
         _validator = validator;
         _studentService = studentService;
-        _mapper = mapper;
+        //_mapper = mapper;
         _redis = redis;
         _seriaLog = serilog;
         _mediator = mediator;
@@ -38,63 +40,43 @@ public class StudentController : ControllerBase
     {
         var request = new StudentGetAll();
         var res = await _mediator.Send(request);
+        _mediator.Publish(new StudentNotification() { message= "Get All Student!" });
         return res;
     }
 
     [HttpGet]
     public async Task<ResponseModel<StudentGetDTO>> GetById(int id)
     {
-        _seriaLog.Information($"Run GetbyId id:{id} !");
-        Student studentEntity = await _studentService.GetByIdAsync(id);
-        _seriaLog.Debug("Get by Id executing....");
-        StudentGetDTO studentDto= _mapper.Map<StudentGetDTO>(studentEntity);
-        if(studentEntity == null)
-        {
-            _seriaLog.Warning($"Student with id: {id} not found!");
-            _seriaLog.Error("this error.. ");
-            return new(studentDto, HttpStatusCode.NotFound);
-        }
-        return new(studentDto);
+        var request = new StudentGetById() { Id=id };
+        var res = await _mediator.Send(request);
+        _mediator.Publish(new StudentNotification() { message = $"Run GetbyId id:{id} !\nStatusCode = {res.StatusCode}" });
+        return res;
     }
     [HttpPost]
-    public async Task<ResponseModel<StudentGetDTO>> Create(StudentCreateDTO studentCreateDto)
+    public async Task<ResponseModel<StudentGetDTO>> Create(StudentCreateDTO _studentCreateDto)
     {
-        _seriaLog.Information("Create Student!");
-        Student mappedStudent = _mapper.Map<Student>(studentCreateDto);
-        var validResult = await _validator.ValidateAsync(mappedStudent);
-
-        if (!validResult.IsValid)
-            return new(validResult.IsValid.ToString());
-        Student studentEntity = await _studentService.CreateAsync(mappedStudent);
-        StudentGetDTO studentDto = _mapper.Map<StudentGetDTO>(mappedStudent);
-
-        _redis.Remove(CacheKeys.Student);
-        return new(studentDto);
+        var request = new StudentCreate() { studentCreateDTO= _studentCreateDto };
+        var res = await _mediator.Send(request);
+        _mediator.Publish(new StudentNotification() { message="Create Student!" });
+        return res;
     }
 
     [HttpDelete]
     public async Task<string> Delete(int id)
     {
-        _seriaLog.Information($"Delete Student id:{id}!");
-        bool result = await _studentService.DeleteAsync(id);
-        if (result == false)
-        {
-            _seriaLog.Warning($"Student with id: {id} not found!");
-        }
-        string s = result ? "O'chirildi" : "Bunday id topilmadi";
-        return s;
+        var request = new StudentDelete() { Id=id };
+        var res = await _mediator.Send(request);
+        _mediator.Publish(new StudentNotification() { message = $"Delete Student id:{id}! {res}" });
+        return res;
     }
 
     [HttpPatch]
-    public async Task<ResponseModel<StudentGetDTO>> Update(UpdateStudentDTO update)
+    public async Task<ResponseModel<StudentGetDTO>> Update(UpdateStudentDTO _update)
     {
-        _seriaLog.Information("Update Student!");
-        Student Mylogin =await _studentService.GetByIdAsync(update.Id);
-        Student mapped = _mapper.Map<Student>(update);
-        mapped.Login = Mylogin.Login;
-        await _studentService.UpdateAsync(mapped);
-        StudentGetDTO studentDto = _mapper.Map<StudentGetDTO>(mapped);
-        return new(studentDto);
+        var request = new StudentUpdate() { update = _update};
+        var res = await _mediator.Send(request);
+        _mediator.Publish(new StudentNotification() { message= "Update Student!" });
+        return res;
 
     }
 }
