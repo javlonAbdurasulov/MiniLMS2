@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniLMS.Application.Caching;
+using MiniLMS.Application.DelegatNotification;
 using MiniLMS.Application.Mediatr;
 using MiniLMS.Application.Mediatr.Notification;
 using MiniLMS.Application.Services;
@@ -17,22 +18,10 @@ namespace MiniLMS.API.Controllers;
 [ApiController]
 public class StudentController : ControllerBase
 {
-
-    private readonly IStudentService _studentService;
-    //private readonly IMapper _mapper;
-    private readonly IValidator<Student> _validator;
-    private readonly IDistributedCache _redis;
-    private readonly Serilog.ILogger _seriaLog;
     private readonly IMediator _mediator;
     
-    public StudentController(IMediator mediator,Serilog.ILogger serilog,
-        IDistributedCache redis, IStudentService studentService/*, IMapper mapper*/,IValidator<Student> validator)
+    public StudentController(IMediator mediator)
     {
-        _validator = validator;
-        _studentService = studentService;
-        //_mapper = mapper;
-        _redis = redis;
-        _seriaLog = serilog;
         _mediator = mediator;
     }
     [HttpGet]
@@ -40,7 +29,14 @@ public class StudentController : ControllerBase
     {
         var request = new StudentGetAll();
         var res = await _mediator.Send(request);
-        _mediator.Publish(new StudentNotification() { message= "Get All Student!" });
+        //_mediator.Publish(new StudentNotification() { message= "Get All Student!" });
+        EventPublisher publisher = new EventPublisher();
+        EventSubscriber subscriber = new EventSubscriber();
+
+        subscriber.Subscribe(publisher);
+
+        publisher.RaiseEvent("Get All Student!");
+
         return res;
     }
 
