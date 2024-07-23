@@ -2,6 +2,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniLMS.Application.Caching;
 using MiniLMS.Application.DelegatNotification;
@@ -25,6 +26,7 @@ public class StudentController : ControllerBase
         _mediator = mediator;
     }
     [HttpGet]
+    
     public async Task<ResponseModel<IEnumerable<StudentGetDTO>>> GetAll()
     {
         var request = new StudentGetAll();
@@ -41,11 +43,14 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet]
+    [DisableRateLimiting]
     public async Task<ResponseModel<StudentGetDTO>> GetById(int id)
     {
         var request = new StudentGetById() { Id=id };
         var res = await _mediator.Send(request);
+        
         _mediator.Publish(new StudentNotification() { message = $"Run GetbyId id:{id} !\nStatusCode = {res.StatusCode}" });
+        
         return res;
     }
     [HttpPost]

@@ -62,9 +62,9 @@ public class StudentService : IStudentService
     {
         Console.WriteLine(entity.Login);
         
-        _context.Students.Update(entity);
-        int executedRows = await _context.SaveChangesAsync();
+            _context.Students.Update(entity);
+            int executedRows = await _context.SaveChangesAsync();
 
-        return executedRows > 0;
+            return executedRows > 0;
     }
 }

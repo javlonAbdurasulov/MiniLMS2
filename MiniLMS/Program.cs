@@ -2,11 +2,15 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using MiniLMS.Application;
 using MiniLMS.Application.Client;
 using MiniLMS.Application.CustomLogger;
 using MiniLMS.Application.FluentValidation;
+using MiniLMS.Application.Mediatr;
+using MiniLMS.Application.Mediatr.Behaiver;
 using MiniLMS.Application.Services;
 using MiniLMS.Infrastructure;
 using MiniLMS.Infrastructure.Services;
@@ -14,6 +18,8 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using System.Diagnostics;
+using System.Threading.RateLimiting;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MiniLMS;
 public class Program
@@ -116,7 +122,54 @@ public class Program
 
                 opt.Configuration = connect;
             });
+            var myOptions = new MyRateLimitOptions();
+            builder.Configuration.GetSection(MyRateLimitOptions.MyRateLimit).Bind(myOptions);
+            builder.Services.AddRateLimiter(
+                rateLimiterOptions =>
+                {
+                    rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+                    rateLimiterOptions.AddFixedWindowLimiter("fixed",
+                    opt =>
+                    {
+                        opt.Window = TimeSpan.FromSeconds(12);
+                        opt.PermitLimit = 3;
+                        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                        opt.QueueLimit = 0;
+                        opt.AutoReplenishment = true;
+
+
+                    });
+
+                    //rateLimiterOptions.AddTokenBucketLimiter("token", opt =>
+                    //{
+                    //    opt.TokenLimit = 100;
+                    //    opt.ReplenishmentPeriod = TimeSpan.FromSeconds(5);
+                    //    opt.TokensPerPeriod = 10;
+                    //});
+
+                    rateLimiterOptions.AddSlidingWindowLimiter("sliding", opt =>
+                    {
+                        opt.Window = TimeSpan.FromSeconds(15);
+                        opt.SegmentsPerWindow = 3;
+                        opt.PermitLimit = 15;
+                    });
+
+                    rateLimiterOptions.AddConcurrencyLimiter("concurency", opt =>
+                    {
+                        opt.PermitLimit = 5;
+                    });
+
+                    rateLimiterOptions.AddTokenBucketLimiter("token", opt =>
+                    {
+                        opt.TokenLimit = myOptions.TokenLimit;
+                        opt.ReplenishmentPeriod = TimeSpan.FromSeconds(myOptions.ReplenishmentPeriod);
+                        opt.TokensPerPeriod = myOptions.TokensPerPeriod;
+                    });
+                }
+            );
+
+            
             //builder.Services.AddSerilog();
 
             builder.Services.AddSerilog(log);
@@ -135,6 +188,12 @@ public class Program
             builder.Services.AddInfrastructureServices(builder.Configuration);
             //builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
             builder.Services.AddMediatR(typeof(MediatrForRegistr).Assembly);
+            //builder.Services.AddMediatR(cfg =>
+            //{
+
+            //});
+            builder.Services.AddScoped<IPipelineBehavior<StudentDelete,string>,LogginBehavior>();
+
 
             var app = builder.Build();
 
@@ -144,13 +203,17 @@ public class Program
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            app.UseRouting();
+            app.UseRateLimiter();
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
-
-            app.MapControllers();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers().RequireRateLimiting("fixed");
+            });
 
             app.Run();
         }
